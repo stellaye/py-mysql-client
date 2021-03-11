@@ -8,6 +8,7 @@ py-mysql-client是mysql-python-connector库的简易版，基于mysql官方开�
 - 支持设置自动提交事务
 - 支持debug模式:日志输出与mysql server从建联到执行query的整个过程step及mysql报文
 
+安装方式 :  pip install py-mysql-client==0.0.0.1
 
 ### 建连与执行查询
 
