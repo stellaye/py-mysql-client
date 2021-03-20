@@ -992,71 +992,6 @@ class MySQLClient(MySQLClientAbstract):
             return None
 
 
-    def cursor(self, buffered=None, raw=None, prepared=None, cursor_class=None,
-               dictionary=None, named_tuple=None):
-        """Instantiates and returns a cursor
-
-        By default, MySQLCursor is returned. Depending on the options
-        while connecting, a buffered and/or raw cursor is instantiated
-        instead. Also depending upon the cursor options, rows can be
-        returned as dictionary or named tuple.
-
-        Dictionary and namedtuple based cursors are available with buffered
-        output but not raw.
-
-        It is possible to also give a custom cursor through the
-        cursor_class parameter, but it needs to be a subclass of
-        mysql.connector.cursor.CursorBase.
-
-        Raises ProgrammingError when cursor_class is not a subclass of
-        CursorBase. Raises ValueError when cursor is not available.
-
-        Returns a cursor-object
-        """
-        self.handle_unread_result()
-
-        if not self.is_connected():
-            raise errors.OperationalError("MySQL Connection not available.")
-        if cursor_class is not None:
-            if not issubclass(cursor_class, CursorBase):
-                raise errors.ProgrammingError(
-                    "Cursor class needs be to subclass of cursor.CursorBase")
-            return (cursor_class)(self)
-
-        buffered = buffered if buffered is not None else self._buffered
-        raw = raw if raw is not None else self._raw
-
-        cursor_type = 0
-        if buffered is True:
-            cursor_type |= 1
-        if raw is True:
-            cursor_type |= 2
-        if dictionary is True:
-            cursor_type |= 4
-        if named_tuple is True:
-            cursor_type |= 8
-        if prepared is True:
-            cursor_type |= 16
-
-        types = {
-            0: MySQLCursor,  # 0
-            1: MySQLCursorBuffered,
-            2: MySQLCursorRaw,
-            3: MySQLCursorBufferedRaw,
-            4: MySQLCursorDict,
-            5: MySQLCursorBufferedDict,
-            8: MySQLCursorNamedTuple,
-            9: MySQLCursorBufferedNamedTuple,
-            16: MySQLCursorPrepared
-        }
-        try:
-            return (types[cursor_type])(self)
-        except KeyError:
-            args = ('buffered', 'raw', 'dictionary', 'named_tuple', 'prepared')
-            raise ValueError('Cursor not available with given criteria: ' +
-                             ', '.join([args[i] for i in range(5)
-                                        if cursor_type & (1 << i) != 0]))
-
 
     def execute(self,operation,params=()):
         rows = None
@@ -1153,9 +1088,8 @@ class MySQLClient(MySQLClientAbstract):
 
     def info_query(self, query):
         """Send a query which only returns 1 row"""
-        cursor = self.cursor(buffered=True)
-        cursor.execute(query)
-        return cursor.fetchone()
+        return self.execute(query)[0]
+
 
     def _handle_binary_ok(self, packet):
         """Handle a MySQL Binary Protocol OK packet

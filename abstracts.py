@@ -1030,11 +1030,6 @@ class MySQLClientAbstract(object):
         """Commit current transaction"""
         pass
 
-    @abstractmethod
-    def cursor(self, buffered=None, raw=None, prepared=None, cursor_class=None,
-               dictionary=None, named_tuple=None):
-        """Instantiates and returns a cursor"""
-        pass
 
     @abstractmethod
     def _execute_query(self, query):
